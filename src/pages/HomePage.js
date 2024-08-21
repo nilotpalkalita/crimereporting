@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Typography, Button } from '@mui/material';
 import ReportList from '../components/ReportList';
 import CategoryFilter from '../components/CategoryFilter';
+import { fetchReports } from '../api/reports';
 
 const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [reports, setReports] = useState([]);
 
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  const loadReports = async () => {
+    try {
+      const fetchedReports = await fetchReports();
+      setReports(fetchedReports);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    }
+  };
+
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    // Filter reports based on the selected category
   };
+
+  const filteredReports = selectedCategory === 'All'
+    ? reports
+    : reports.filter(report => report.category.toLowerCase() === selectedCategory.toLowerCase());
 
   return (
     <Container sx={{ py: 4 }}>
@@ -31,7 +48,7 @@ const HomePage = () => {
         selectedCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}
       />
-      <ReportList reports={reports} />
+      <ReportList reports={filteredReports} />
     </Container>
   );
 };
